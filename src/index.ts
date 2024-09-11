@@ -6,6 +6,10 @@ import helmet from "helmet";
 import "./authStrategies/local-strategy.js";
 import dotenv from "dotenv";
 
+import authRoutes from "./routes/auth.js";
+import authorizedRoutes from "./routes/authorizedRoutes.js";
+import registerUser from "./routes/registerUser.js";
+
 dotenv.config();
 
 const app = express();
@@ -34,6 +38,9 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // Import routes
+app.use("/api", authRoutes);
+app.use("/api", authorizedRoutes);
+app.use("/api", registerUser);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

@@ -4,7 +4,10 @@ import passport from "passport";
 import cookieParser from "cookie-parser";
 import helmet from "helmet";
 import "./authStrategies/local-strategy.js";
+import "./authStrategies/githubStrategy.js";
 import dotenv from "dotenv";
+import connectPgSimple from "connect-pg-simple";
+import pool from "./db/db.js";
 
 import authRoutes from "./routes/auth.js";
 import authorizedRoutes from "./routes/authorizedRoutes.js";
@@ -21,8 +24,14 @@ app.use(cookieParser());
 const sessionSecret = process.env.SESSION_SECRET;
 if (!sessionSecret) throw new Error("SESSION_SECRET must be set");
 
+const PgSession = connectPgSimple(session);
+
 app.use(
   session({
+    store: new PgSession({
+      pool: pool,
+      tableName: "session",
+    }),
     secret: sessionSecret,
     resave: false,
     saveUninitialized: false,

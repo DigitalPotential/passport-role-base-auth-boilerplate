@@ -1,6 +1,7 @@
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import pool from "../db/db.js";
+import bcrypt from "bcrypt";
 import { Response, Request, NextFunction } from "express";
 
 interface User {
@@ -28,12 +29,18 @@ passport.use(
         "SELECT * FROM users WHERE username = $1",
         [username]
       );
-      console.log("localstrategy result", result);
       const user = result.rows[0];
 
-      if (!user || password !== user.password) {
-        return done(null, false, { message: "Incorrect User or password" });
+      if (!user) {
+        return done(null, false, { message: "Incorrect username or password" });
       }
+
+      const isMatch = await bcrypt.compare(password, user.password);
+
+      if (!isMatch) {
+        return done(null, false, { message: "Incorrect username or password" });
+      }
+
       return done(null, {
         id: user.id,
         username: user.username,
